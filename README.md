@@ -1,16 +1,16 @@
-# VibeCaas.ai
+# VibeCaas.com
 
 <p align="center">
   <img src="media/VibeCaaSLogo.png" alt="VibeCaas Logo" width="360" />
   <br/>
-  <em>VibeCaas.ai — local, voice-enabled coding assistant for VS Code & Cursor</em>
+  <em>VibeCaas.com — local, voice-enabled coding assistant for VS Code & Cursor</em>
   <br/>
 </p>
 
-VibeCaas.ai Ollama VS Extension is a voice-enabled, AI-powered coding assistant for VS Code and Cursor. It runs fully locally using Ollama models, keeping your code private while boosting productivity with brainstorming (Vibe Mode), code generation (Code Mode), and an interactive chat sidebar.
+VibeCaas.com Ollama VS Extension is a voice-enabled, AI-powered coding assistant for VS Code and Cursor. It runs fully locally using Ollama models, keeping your code private while boosting productivity with brainstorming (Vibe Mode), code generation (Code Mode), and an interactive chat sidebar.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![VSCE](https://img.shields.io/badge/VS%20Code%20Extension-VibeCaas.ai-6c43f3)](#)
+[![VSCE](https://img.shields.io/badge/VS%20Code%20Extension-VibeCaas.com-6c43f3)](#)
 [![Built with Ollama](https://img.shields.io/badge/Built%20with-Ollama-000)](https://ollama.com)
 
 ## Features
@@ -39,7 +39,7 @@ VibeCaas.ai Ollama VS Extension is a voice-enabled, AI-powered coding assistant 
    ```
 
 2. Install the extension:
-   - From Marketplace: search for "VibeCaas.ai"
+   - From Marketplace: search for "VibeCaas.com"
    - Or build locally:
      ```bash
      npm install
@@ -70,14 +70,14 @@ Tip: Voice Mode is optional and disabled by default. When toggled on, the status
 
 ## Usage
 
-- Sidebar: Click the VibeCaas.ai icon to open the chat panel.
+- Sidebar: Click the VibeCaas.com icon to open the chat panel.
 - Status Bar: Shows active model and mode. Click to switch model or toggle voice.
 - Commands:
-- VibeCaas.ai: Generate Code (Ctrl/Cmd + Alt + G)
-- VibeCaas.ai: Open Chat (Ctrl/Cmd + Alt + C)
-- VibeCaas.ai: Toggle Voice Mode
-- VibeCaas.ai: Generate Plan (Ctrl/Cmd + Alt + P)
-- VibeCaas.ai: Debug Selection
+- VibeCaas.com: Generate Code (Ctrl/Cmd + Alt + G)
+- VibeCaas.com: Open Chat (Ctrl/Cmd + Alt + C)
+- VibeCaas.com: Toggle Voice Mode
+- VibeCaas.com: Generate Plan (Ctrl/Cmd + Alt + P)
+- VibeCaas.com: Debug Selection
 
 ### Example workflow
 
@@ -106,8 +106,8 @@ Recommended:
 - `mistral:7b` (reasoning/general)
 
 List available models and pull new ones via the command palette:
-- "VibeCaas.ai: Change Model"
-- "VibeCaas.ai: Pull Ollama Model"
+- "VibeCaas.com: Change Model"
+- "VibeCaas.com: Pull Ollama Model"
 
 ## Security and Privacy
 
