@@ -4,6 +4,7 @@ import { ChatViewProvider } from './chatViewProvider';
 import { registerCommands } from './commands';
 import { Logger } from './logger';
 import { VoiceSession } from './voiceSession';
+import { ToolsViewProvider } from './toolsViewProvider';
 
 let chatProvider: ChatViewProvider | undefined;
 let ollamaClient: OllamaClient | undefined;
@@ -24,6 +25,11 @@ export async function activate(context: vscode.ExtensionContext) {
   chatProvider = new ChatViewProvider(context.extensionUri, ollamaClient, logger);
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider('vibecaas.chatView', chatProvider)
+  );
+
+  const toolsProvider = new ToolsViewProvider(context.extensionUri);
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider('vibecaas.toolsView', toolsProvider)
   );
 
   // Status bar: show current model and voice toggle

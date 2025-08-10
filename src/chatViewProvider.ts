@@ -48,6 +48,12 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             { role: 'user', content: `${msg.text}\n\nContext (may be truncated):\n${editorContext}` }
           ] as any[];
           try {
+            // Scaffold shortcut: if message starts with "Scaffold:" trigger the file generator command
+            const text: string = msg.text || '';
+            if (/^\s*scaffold\s*:/i.test(text)) {
+              await vscode.commands.executeCommand('vibecaas.scaffoldFromPrompt', text.replace(/^\s*scaffold\s*:/i, '').trim());
+              return;
+            }
             this.post({ type: 'chatStart' });
             let acc = '';
             await this.ollama.chat(model, messages as any, (t) => {
@@ -117,6 +123,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         <div class="chip" data-action="plan">Plan</div>
         <div class="chip" data-action="debug">Debug</div>
         <div class="chip" data-action="explain">Explain</div>
+        <div class="chip" data-action="scaffold">Scaffold</div>
       </div>
       <div class="spacer"></div>
       <button id="mic" title="Toggle Voice">🎙️</button>

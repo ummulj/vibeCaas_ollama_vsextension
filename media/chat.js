@@ -75,6 +75,7 @@
       if(action === 'plan') inputEl.value = base ? `Plan: ${base}` : 'Plan: ';
       if(action === 'debug') inputEl.value = base ? `Debug: ${base}` : 'Debug: ';
       if(action === 'explain') inputEl.value = base ? `Explain: ${base}` : 'Explain: ';
+      if(action === 'scaffold') inputEl.value = base ? `Scaffold: ${base}` : 'Scaffold: ';
       inputEl.focus();
     }
   });

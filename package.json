@@ -123,6 +123,11 @@
           "id": "vibecaas.chatView",
           "name": "VibeCaas Chat",
           "type": "webview"
+        },
+        {
+          "id": "vibecaas.toolsView",
+          "name": "VibeCaas Tools",
+          "type": "webview"
         }
       ]
     },

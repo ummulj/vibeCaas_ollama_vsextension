@@ -192,9 +192,9 @@ export function registerCommands(context: vscode.ExtensionContext, ctx: Ctx) {
 
   // Scaffold from Prompt (multi-file)
   context.subscriptions.push(
-    vscode.commands.registerCommand('vibecaas.scaffoldFromPrompt', async () => {
+    vscode.commands.registerCommand('vibecaas.scaffoldFromPrompt', async (arg?: string) => {
       if (!ctx.ollamaClient) return;
-      const prompt = await vscode.window.showInputBox({ prompt: 'Describe the app or feature to scaffold', placeHolder: 'e.g., Create a FastAPI app with /users endpoints and a README' });
+      const prompt = arg ?? (await vscode.window.showInputBox({ prompt: 'Describe the app or feature to scaffold', placeHolder: 'e.g., Create a FastAPI app with /users endpoints and a README' }));
       if (!prompt) return;
       await scaffoldFromPrompt({ ollama: ctx.ollamaClient, logger: ctx.logger, prompt });
     })
