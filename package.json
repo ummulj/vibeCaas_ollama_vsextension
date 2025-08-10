@@ -1,0 +1,196 @@
+{
+  "name": "vibecaas-ai",
+  "displayName": "VibeCaas.ai",
+  "description": "A voice-enabled, AI-powered coding assistant for VS Code and Cursor, using local Ollama models for privacy and customizable workflows.",
+  "version": "0.1.0",
+  "publisher": "vibecaas",
+  "license": "MIT",
+  "engines": {
+    "vscode": ">=1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "icon": "media/icon.png",
+  "main": "./dist/src/extension.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vibecaas/vibecaas-ai"
+  },
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:vibecaas.generateCode",
+    "onCommand:vibecaas.generatePlan",
+    "onCommand:vibecaas.debugSelection",
+    "onCommand:vibecaas.openChat",
+    "onCommand:vibecaas.toggleVoiceMode",
+    "onCommand:vibecaas.toggleMode",
+    "onView:vibecaas.chatView"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "vibecaas.generateCode",
+        "title": "VibeCaas.ai: Generate Code"
+      },
+      {
+        "command": "vibecaas.generatePlan",
+        "title": "VibeCaas.ai: Generate Plan"
+      },
+      {
+        "command": "vibecaas.debugSelection",
+        "title": "VibeCaas.ai: Debug Selection"
+      },
+      {
+        "command": "vibecaas.openChat",
+        "title": "VibeCaas.ai: Open Chat"
+      },
+      {
+        "command": "vibecaas.toggleVoiceMode",
+        "title": "VibeCaas.ai: Toggle Voice Mode"
+      },
+      {
+        "command": "vibecaas.toggleMode",
+        "title": "VibeCaas.ai: Toggle Vibe/Code Mode"
+      },
+      {
+        "command": "vibecaas.changeModel",
+        "title": "VibeCaas.ai: Change Model"
+      },
+      {
+        "command": "vibecaas.pullModel",
+        "title": "VibeCaas.ai: Pull Ollama Model"
+      },
+      {
+        "command": "vibecaas.summarizeDiff",
+        "title": "VibeCaas.ai: Summarize Git Diff"
+      },
+      {
+        "command": "vibecaas.commitMessageFromDiff",
+        "title": "VibeCaas.ai: Generate Commit Message from Diff"
+      },
+      {
+        "command": "vibecaas.openFile",
+        "title": "VibeCaas.ai: Open File (Safe)"
+      },
+      {
+        "command": "vibecaas.showDiff",
+        "title": "VibeCaas.ai: Show Diff (Safe)"
+      },
+      {
+        "command": "vibecaas.saveActive",
+        "title": "VibeCaas.ai: Save Active File (Confirm)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "vibecaas.generateCode",
+        "key": "ctrl+alt+g",
+        "mac": "cmd+alt+g",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "vibecaas.openChat",
+        "key": "ctrl+alt+c",
+        "mac": "cmd+alt+c"
+      },
+      {
+        "command": "vibecaas.generatePlan",
+        "key": "ctrl+alt+p",
+        "mac": "cmd+alt+p"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "vibecaas",
+          "title": "VibeCaas.ai",
+          "icon": "media/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "vibecaas": [
+        {
+          "id": "vibecaas.chatView",
+          "name": "VibeCaas Chat",
+          "type": "webview"
+        }
+      ]
+    },
+    "configuration": {
+      "type": "object",
+      "title": "VibeCaas.ai",
+      "properties": {
+        "vibecaas.ollamaUrl": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "Base URL for the local Ollama server"
+        },
+        "vibecaas.defaultModel": {
+          "type": "string",
+          "default": "qwen2.5-coder:7b",
+          "description": "Default Ollama model to use"
+        },
+        "vibecaas.enableVoice": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable voice input using open-source speech-to-text (Vosk). Requires optional dependencies and model download."
+        },
+        "vibecaas.voskModelPath": {
+          "type": "string",
+          "default": "",
+          "description": "Filesystem path to a Vosk speech recognition model (required if voice is enabled)"
+        },
+        "vibecaas.promptTemplates": {
+          "type": "object",
+          "default": {
+            "debug": "Identify potential errors or edge cases in the following code and suggest fixes.",
+            "plan": "Create a step-by-step implementation plan for the following task.",
+            "generate": "Generate idiomatic, well-documented code for the following request."
+          },
+          "markdownDescription": "Custom prompt templates used in Code/Vibe modes. Keys: debug, plan, generate"
+        },
+        "vibecaas.enableDebug": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable verbose debug logging in the Output window"
+        },
+        "vibecaas.mode": {
+          "type": "string",
+          "enum": [
+            "vibe",
+            "code"
+          ],
+          "default": "code",
+          "description": "Current assistant mode: Vibe (brainstorm/plan) or Code (generate/edit)"
+        },
+        "vibecaas.maxContextBytes": {
+          "type": "number",
+          "default": 200000,
+          "description": "Maximum bytes of editor/workspace context to include in prompts"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -w -p .",
+    "package": "vsce package",
+    "test": "node ./dist/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.80.0",
+    "@vscode/test-electron": "^2.3.9",
+    "glob": "^10.4.5",
+    "mocha": "^10.8.2",
+    "typescript": "^5.4.0",
+    "vsce": "^2.15.0"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.12"
+  }
+}

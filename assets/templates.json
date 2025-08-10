@@ -1,0 +1,6 @@
+{
+  "debug": "Identify potential errors, edge cases, and performance issues in the following code. Suggest fixes with explanations.",
+  "plan": "Create a clear, step-by-step implementation plan for the requested feature. Include data structures, APIs, and file changes.",
+  "generate": "Generate idiomatic, well-documented code that fits into a modern TypeScript/JavaScript/Python project. Include only the code unless asked to explain."
+}
+

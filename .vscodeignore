@@ -1,0 +1,12 @@
+**/.git/**
+**/.github/**
+**/.vscode/**
+**/.vscode-test/**
+**/test/**
+**/*.map
+src/**
+**/node_modules/**/README.md
+**/node_modules/**/CHANGELOG.md
+**/node_modules/**/test/**
+**/node_modules/**/docs/**
+
