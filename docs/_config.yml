@@ -1,0 +1,7 @@
+title: VibeCaas.ai
+description: Local, voice-enabled Ollama assistant for VS Code & Cursor
+theme: jekyll-theme-cayman
+show_downloads: true
+github:
+  is_project_page: true
+

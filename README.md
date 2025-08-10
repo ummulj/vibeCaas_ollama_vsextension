@@ -1,5 +1,12 @@
 # VibeCaas.ai
 
+<p align="center">
+  <img src="media/VibeCaaSLogo.png" alt="VibeCaas Logo" width="360" />
+  <br/>
+  <em>VibeCaas.ai — local, voice-enabled coding assistant for VS Code & Cursor</em>
+  <br/>
+</p>
+
 VibeCaas.ai Ollama VS Extension is a voice-enabled, AI-powered coding assistant for VS Code and Cursor. It runs fully locally using Ollama models, keeping your code private while boosting productivity with brainstorming (Vibe Mode), code generation (Code Mode), and an interactive chat sidebar.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
