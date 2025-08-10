@@ -32,7 +32,8 @@ export class VoiceSession {
       const model = new Model(modelPath);
       const sampleRate = 16000;
       this.recognizer = new Recognizer({ model, sampleRate });
-      this.recorder = (rec as any).record({ sampleRateHertz: sampleRate, threshold: 0, verbose: false, recordProgram: process.platform === 'win32' ? 'sox' : undefined });
+      const recordProgram = process.platform === 'darwin' ? 'sox' : (process.platform === 'win32' ? 'sox' : undefined);
+      this.recorder = (rec as any).record({ sampleRateHertz: sampleRate, threshold: 0, verbose: false, recordProgram });
       const stream = (this.recorder as any).stream();
       stream.on('data', (data: Buffer) => {
         if (this.recognizer.acceptWaveform(data)) {
