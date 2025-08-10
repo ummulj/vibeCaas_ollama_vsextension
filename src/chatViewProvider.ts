@@ -111,7 +111,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 <body>
   <div class="container">
     <div class="toolbar">
-      <img class="icon" title="VibeCaas.ai" width="18" height="18" src="${webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'media', 'icon.png'))}">
+      <img class="icon" title="VibeCaas.ai" width="18" height="18" src="${webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'media', 'VibeCaaSLogo.png'))}">
       <select id="model"></select>
       <div class="chips">
         <div class="chip" data-action="plan">Plan</div>

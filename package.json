@@ -11,7 +11,7 @@
   "categories": [
     "Other"
   ],
-  "icon": "media/icon.png",
+  "icon": "media/VibeCaaSLogo.png",
   "main": "./dist/src/extension.js",
   "repository": {
     "type": "git",
@@ -113,7 +113,7 @@
         {
           "id": "vibecaas",
           "title": "VibeCaas.ai",
-          "icon": "media/icon.png"
+          "icon": "media/VibeCaaSLogo.png"
         }
       ]
     },
