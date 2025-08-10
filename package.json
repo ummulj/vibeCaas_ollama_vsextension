@@ -15,7 +15,11 @@
   "main": "./dist/src/extension.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vibecaas/vibecaas-ai"
+    "url": "https://github.com/ttracx/vibeCaas_ollama_vsextension"
+  },
+  "homepage": "https://github.com/ttracx/vibeCaas_ollama_vsextension#readme",
+  "bugs": {
+    "url": "https://github.com/ttracx/vibeCaas_ollama_vsextension/issues"
   },
   "activationEvents": [
     "onStartupFinished",

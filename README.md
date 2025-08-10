@@ -2,6 +2,10 @@
 
 VibeCaas.ai is a voice-enabled, AI-powered coding assistant for VS Code and Cursor. It runs fully locally using Ollama models, keeping your code private while boosting productivity with brainstorming (Vibe Mode), code generation (Code Mode), and an interactive chat sidebar.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![VSCE](https://img.shields.io/badge/VS%20Code%20Extension-VibeCaas.ai-6c43f3)](#)
+[![Built with Ollama](https://img.shields.io/badge/Built%20with-Ollama-000)](https://ollama.com)
+
 ## Features
 
 - Voice-first brainstorming (Vibe Mode) using open-source speech-to-text (Vosk)
