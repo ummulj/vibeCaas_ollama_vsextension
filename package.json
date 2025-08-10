@@ -84,6 +84,10 @@
       {
         "command": "vibecaas.saveActive",
         "title": "VibeCaas.ai: Save Active File (Confirm)"
+      },
+      {
+        "command": "vibecaas.scaffoldFromPrompt",
+        "title": "VibeCaas.ai: Scaffold from Prompt"
       }
     ],
     "keybindings": [
@@ -173,6 +177,21 @@
           "type": "number",
           "default": 200000,
           "description": "Maximum bytes of editor/workspace context to include in prompts"
+        },
+        "vibecaas.scaffold.maxFiles": {
+          "type": "number",
+          "default": 20,
+          "description": "Maximum number of files that can be created in a single scaffold operation"
+        },
+        "vibecaas.scaffold.maxTotalBytes": {
+          "type": "number",
+          "default": 400000,
+          "description": "Maximum total size (bytes) across all files for a scaffold operation"
+        },
+        "vibecaas.scaffold.allowOverwrite": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow overwriting existing files during scaffold (will still prompt per file)"
         }
       }
     }
@@ -181,7 +200,8 @@
     "compile": "tsc -p .",
     "watch": "tsc -w -p .",
     "package": "vsce package",
-    "test": "node ./dist/test/runTest.js"
+    "test": "node ./dist/test/runTest.js",
+    "export:icons": "node scripts/export-icons.js"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
@@ -195,6 +215,7 @@
     "vsce": "^2.15.0"
   },
   "dependencies": {
-    "node-fetch": "^2.6.12"
+    "node-fetch": "^2.6.12",
+    "sharp": "^0.33.4"
   }
 }

@@ -4,6 +4,7 @@ import { ChatViewProvider } from './chatViewProvider';
 import { Logger } from './logger';
 import { collectEditorContext } from './contextCollector';
 import { confirmAndSaveActive, safeOpen, safeShowDiff } from './safeCommands';
+import { scaffoldFromPrompt } from './scaffold';
 import { getGitDiff, getGitStatusShort } from './gitUtils';
 
 type Ctx = {
@@ -186,6 +187,16 @@ export function registerCommands(context: vscode.ExtensionContext, ctx: Ctx) {
   context.subscriptions.push(
     vscode.commands.registerCommand('vibecaas.saveActive', async () => {
       await confirmAndSaveActive();
+    })
+  );
+
+  // Scaffold from Prompt (multi-file)
+  context.subscriptions.push(
+    vscode.commands.registerCommand('vibecaas.scaffoldFromPrompt', async () => {
+      if (!ctx.ollamaClient) return;
+      const prompt = await vscode.window.showInputBox({ prompt: 'Describe the app or feature to scaffold', placeHolder: 'e.g., Create a FastAPI app with /users endpoints and a README' });
+      if (!prompt) return;
+      await scaffoldFromPrompt({ ollama: ctx.ollamaClient, logger: ctx.logger, prompt });
     })
   );
 
