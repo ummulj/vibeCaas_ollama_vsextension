@@ -29,7 +29,8 @@
     "onCommand:vibecaas.openChat",
     "onCommand:vibecaas.toggleVoiceMode",
     "onCommand:vibecaas.toggleMode",
-    "onView:vibecaas.chatView"
+    "onView:vibecaas.chatView",
+    "onView:vibecaas.toolsView"
   ],
   "contributes": {
     "commands": [
