@@ -21,6 +21,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         this._ollamaClient = ollamaClient;
         this._logger = logger;
         this._agentOrchestrator = new AgentOrchestrator(ollamaClient, logger);
+        this._logger.log('ChatViewProvider constructor called');
     }
 
     public resolveWebviewView(
@@ -28,7 +29,18 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         context: vscode.WebviewViewResolveContext,
         _token: vscode.CancellationToken,
     ) {
+        this._logger.log('=== CHAT VIEW PROVIDER RESOLVE START ===');
+        this._logger.log(`Resolving webview view for type: ${webviewView.viewType}`);
+        this._logger.log(`Webview view visible: ${webviewView.visible}`);
+        this._logger.log(`Webview view title: ${webviewView.title}`);
+        this._logger.log(`Context: ${JSON.stringify(context)}`);
+        
         this._view = webviewView;
+        
+        // Add debugging
+        this._logger.log('Resolving webview view');
+        this._logger.log(`Webview view type: ${webviewView.viewType}`);
+        this._logger.log(`Webview view visible: ${webviewView.visible}`);
 
         webviewView.webview.options = {
             enableScripts: true,
@@ -36,11 +48,22 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 vscode.Uri.joinPath(this._extensionUri, 'media')
             ]
         };
+        
+        this._logger.log('Webview options set');
 
-        webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+        const html = this._getHtmlForWebview(webviewView.webview);
+        this._logger.log(`Generated HTML length: ${html.length}`);
+        
+        try {
+            webviewView.webview.html = html;
+            this._logger.log('HTML set on webview successfully');
+        } catch (error) {
+            this._logger.error('Failed to set HTML on webview:', error);
+        }
 
         // Handle messages from the webview
         webviewView.webview.onDidReceiveMessage(async (message) => {
+            this._logger.log(`Received message from webview: ${JSON.stringify(message)}`);
             try {
                 await this._handleWebviewMessage(message);
             } catch (error) {
@@ -51,193 +74,70 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
         // Send initial status
         this._updateStatus();
+        
+        this._logger.log('Webview view resolved successfully');
+        this._logger.log('=== CHAT VIEW PROVIDER RESOLVE END ===');
     }
 
     private _getHtmlForWebview(webview: vscode.Webview): string {
         const logoUri = webview.asWebviewUri(
             vscode.Uri.joinPath(this._extensionUri, 'media', 'VibeCaaSLogo.png')
         );
+        
+        this._logger.log(`Logo URI: ${logoUri.toString()}`);
+        this._logger.log(`Extension URI: ${this._extensionUri.toString()}`);
 
-        return `<!DOCTYPE html>
+        // First, try a simple HTML to test if the issue is with complex content
+        const simpleHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VibeCaas Chat</title>
-    <link rel="stylesheet" href="${webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'chat.css'))}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: #f0f0f0; 
+            color: #333; 
+        }
+        .test-content { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        h1 { color: #2563eb; }
+        .status { 
+            background: #10b981; 
+            color: white; 
+            padding: 8px 16px; 
+            border-radius: 4px; 
+            display: inline-block; 
+            margin: 10px 0; 
+        }
+    </style>
 </head>
 <body>
-    <!-- Modern Chat Interface -->
-    <div class="chat-app">
-        <!-- Clean Header -->
-        <div class="chat-header">
-            <div class="header-left">
-                <div class="logo-section">
-                    <img src="${logoUri}" alt="VibeCaas" class="header-logo">
-                    <span class="header-title">VibeCaas</span>
-                </div>
-                <div class="header-subtitle">AI Coding Assistant</div>
-            </div>
-            
-            <div class="header-actions">
-                <button class="action-btn" id="settingsBtn" title="Settings">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/>
-                    </svg>
-                </button>
-                <button class="action-btn" id="helpBtn" title="Help">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                        <path d="M12 17h.01"/>
-                    </svg>
-                </button>
-            </div>
-        </div>
-
-        <!-- Main Chat Area -->
-        <div class="chat-main">
-            <!-- Messages Container -->
-            <div class="messages-container" id="messagesContainer">
-                <!-- Welcome Message -->
-                <div class="message assistant">
-                    <div class="message-avatar">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
-                            <path d="M12 16v-4"/>
-                            <path d="M12 8h.01"/>
-                        </svg>
-                    </div>
-                    <div class="message-content">
-                        <div class="message-header">
-                            <span class="message-author">VibeCaas AI</span>
-                            <span class="message-time">Just now</span>
-                        </div>
-                        <div class="message-text">
-                            <p>👋 Welcome! I'm your AI coding assistant powered by local Ollama models.</p>
-                            <p>I can help you with:</p>
-                            <ul>
-                                <li>🏗️ <strong>Planning & Architecture</strong> - Design system architecture and implementation plans</li>
-                                <li>💻 <strong>Code Generation</strong> - Write idiomatic, well-documented code</li>
-                                <li>🐛 <strong>Debugging & Review</strong> - Identify issues and suggest improvements</li>
-                                <li>🚀 <strong>Application Scaffolding</strong> - Generate complete applications</li>
-                            </ul>
-                        </div>
-                        
-                        <!-- Quick Action Buttons -->
-                        <div class="quick-actions">
-                            <button class="quick-action-btn" data-action="plan">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M9 11H1l8-8v8Z"/>
-                                    <path d="M23 13h-8l8 8v-8Z"/>
-                                    <path d="M9 13H1l8 8v-8Z"/>
-                                    <path d="M23 11h-8l8-8v8Z"/>
-                                </svg>
-                                Plan Project
-                            </button>
-                            <button class="quick-action-btn" data-action="debug">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M8 9l3 3-3 3"/>
-                                    <path d="M16 9l-3 3 3 3"/>
-                                    <path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"/>
-                                </svg>
-                                Debug Code
-                            </button>
-                            <button class="quick-action-btn" data-action="explain">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"/>
-                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                                    <path d="M12 17h.01"/>
-                                </svg>
-                                Explain Code
-                            </button>
-                            <button class="quick-action-btn" data-action="scaffold">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M3 3h18v18H3z"/>
-                                    <path d="M9 9h6v6H9z"/>
-                                    <path d="M3 9h6"/>
-                                    <path d="M15 9h6"/>
-                                    <path d="M3 15h6"/>
-                                    <path d="M15 15h6"/>
-                                </svg>
-                                Scaffold App
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modern Input Area -->
-            <div class="input-area">
-                <div class="input-container">
-                    <div class="input-wrapper">
-                        <div class="input-field-container">
-                            <textarea 
-                                id="messageInput" 
-                                class="input-field" 
-                                placeholder="Ask anything... (selection and open files included as context)"
-                                rows="1"
-                            ></textarea>
-                            <div class="input-actions">
-                                <button class="input-action-btn" id="voiceButton" title="Voice Input">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                                        <line x1="12" y1="19" x2="12" y2="23"/>
-                                        <line x1="8" y1="23" x2="16" y2="23"/>
-                                    </svg>
-                                </button>
-                                <button class="input-action-btn" id="refreshButton" title="Refresh">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-                                        <path d="M21 3v5h-5"/>
-                                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-                                        <path d="M3 21v-5h5"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <button class="send-button" id="sendButton" disabled>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M22 2L11 13"/>
-                                <path d="M22 2l-7 20-4-9-9-4 20-7z"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Status Bar -->
-        <div class="status-bar">
-            <div class="status-section">
-                <div class="status-item">
-                    <div class="status-indicator" id="ollamaStatus"></div>
-                    <span class="status-text" id="ollamaStatusText">Ollama</span>
-                </div>
-                <div class="status-item">
-                    <div class="status-indicator" id="modelStatus"></div>
-                    <span class="status-text" id="modelStatusText">Model</span>
-                </div>
-            </div>
-            
-            <div class="status-section">
-                <div class="status-item">
-                    <div class="status-indicator" id="voiceStatus"></div>
-                    <span class="status-text" id="voiceStatusText">Voice</span>
-                </div>
-                <div class="status-item">
-                    <span class="mode-indicator" id="currentMode">Chat Mode</span>
-                </div>
-            </div>
-        </div>
+    <div class="test-content">
+        <h1>VibeCaas Chat Test</h1>
+        <div class="status">✅ Webview is working!</div>
+        <p>If you can see this, the webview is functioning correctly.</p>
+        <p>Logo URI: ${logoUri.toString()}</p>
+        <p>Extension URI: ${this._extensionUri.toString()}</p>
+        <p>Time: ${new Date().toLocaleString()}</p>
     </div>
-
-    <script src="${webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'chat.js'))}"></script>
+    <script>
+        console.log('VibeCaas chat webview loaded successfully');
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded in VibeCaas webview');
+        });
+    </script>
 </body>
 </html>`;
+
+        this._logger.log(`Generated simple HTML with ${simpleHtml.length} characters`);
+        return simpleHtml;
     }
 
     private async _handleWebviewMessage(message: any): Promise<void> {
