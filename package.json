@@ -2,7 +2,7 @@
   "name": "vibecaas-ai",
   "displayName": "VibeCaas.ai",
   "description": "A voice-enabled, AI-powered coding assistant for VS Code and Cursor, using local Ollama models for privacy and customizable workflows.",
-          "version": "0.1.3",
+          "version": "0.1.4",
   "publisher": "vibecaas",
   "license": "MIT",
   "engines": {

@@ -2,6 +2,9 @@
 (function() {
     'use strict';
 
+    // VS Code webview API
+    const vscode = typeof acquireVsCodeApi === 'function' ? acquireVsCodeApi() : { postMessage: () => {} };
+
     // Global state
     let chatHistory = [];
     let currentSettings = {};
@@ -319,28 +322,28 @@
     }
 
     function handleQuickActionClick(e) {
-        if (e.target.classList.contains('quick-action-btn')) {
-            const action = e.target.dataset.action;
-            let actionText = '';
-            
-            switch(action) {
-                case 'plan':
-                    actionText = 'Plan a project for me';
-                    break;
-                case 'debug':
-                    actionText = 'Debug this code';
-                    break;
-                case 'explain':
-                    actionText = 'Explain this code';
-                    break;
-                case 'scaffold':
-                    actionText = 'Scaffold a new application';
-                    break;
-                default:
-                    actionText = 'Help me with this';
+        const target = e.target.closest('.quick-action-btn');
+        if (target) {
+            const action = target.dataset.action;
+            // Notify extension so it can run native commands
+            if (action === 'scaffold') {
+                const requirements = prompt('Describe the app to scaffold');
+                if (requirements && requirements.trim().length > 0) {
+                    vscode.postMessage({ command: 'createApp', requirements });
+                }
+                return;
             }
-            
-            // Prefill input with action
+            vscode.postMessage({ command: 'quickAction', action });
+
+            // Also prefill input for user editing
+            let actionText = '';
+            switch(action) {
+                case 'plan': actionText = 'Plan a project for me'; break;
+                case 'debug': actionText = 'Debug this code'; break;
+                case 'explain': actionText = 'Explain this code'; break;
+                case 'scaffold': actionText = 'Scaffold a new application'; break;
+                default: actionText = 'Help me with this';
+            }
             messageInput.value = actionText + ': ';
             messageInput.focus();
             handleInputChange();
@@ -355,16 +358,16 @@
     }
 
     function refreshChat() {
-        // Clear chat and reload
         if (confirm('Are you sure you want to refresh the chat?')) {
             clearChat();
             showNotification('Chat refreshed', 'success');
+            vscode.postMessage({ command: 'refresh' });
         }
     }
 
     function openSettings() {
-        // For now, just show a notification
-        showNotification('Settings panel coming soon!', 'info');
+        // Request the extension host to open VS Code settings for this extension
+        vscode.postMessage({ command: 'openSettings' });
     }
 
     function openHelp() {
@@ -477,7 +480,7 @@
                 break;
                 
             case 'updateStatus':
-                updateStatusFromExtension(message.status);
+                updateStatusFromExtension({ ollama: message.ollama, model: message.model, voice: message.voice });
                 break;
                 
             case 'clearChat':
