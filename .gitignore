@@ -6,9 +6,8 @@ dist/
 coverage/
 .env
 
-
 # Build artifacts
-*.vsix
 *.tgz
 *.tar.gz
 dist/*.map
+vibecaas-ai-0.1.3.vsix
