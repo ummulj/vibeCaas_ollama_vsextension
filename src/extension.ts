@@ -27,7 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
     agentOrchestrator = new AgentOrchestrator(ollamaClient, logger);
 
     // Register chat view provider
-    chatProvider = new ChatViewProvider(ollamaClient, logger);
+    chatProvider = new ChatViewProvider(context.extensionUri, ollamaClient, logger);
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(
             ChatViewProvider.viewType,

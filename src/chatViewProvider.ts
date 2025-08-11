@@ -10,11 +10,14 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     private _ollamaClient: OllamaClient;
     private _logger: Logger;
     private _agentOrchestrator: AgentOrchestrator;
+    private _extensionUri: vscode.Uri;
 
     constructor(
+        extensionUri: vscode.Uri,
         ollamaClient: OllamaClient,
         logger: Logger
     ) {
+        this._extensionUri = extensionUri;
         this._ollamaClient = ollamaClient;
         this._logger = logger;
         this._agentOrchestrator = new AgentOrchestrator(ollamaClient, logger);
@@ -30,7 +33,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         webviewView.webview.options = {
             enableScripts: true,
             localResourceRoots: [
-                vscode.Uri.joinPath(this._getExtensionUri(), 'media')
+                vscode.Uri.joinPath(this._extensionUri, 'media')
             ]
         };
 
@@ -52,7 +55,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
     private _getHtmlForWebview(webview: vscode.Webview): string {
         const logoUri = webview.asWebviewUri(
-            vscode.Uri.joinPath(this._getExtensionUri(), 'media', 'VibeCaaSLogo.png')
+            vscode.Uri.joinPath(this._extensionUri, 'media', 'VibeCaaSLogo.png')
         );
 
         return `<!DOCTYPE html>
@@ -61,7 +64,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VibeCaas Chat</title>
-    <link rel="stylesheet" href="${webview.asWebviewUri(vscode.Uri.joinPath(this._getExtensionUri(), 'media', 'chat.css'))}">
+    <link rel="stylesheet" href="${webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'chat.css'))}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -232,7 +235,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         </div>
     </div>
 
-    <script src="${webview.asWebviewUri(vscode.Uri.joinPath(this._getExtensionUri(), 'media', 'chat.js'))}"></script>
+    <script src="${webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'chat.js'))}"></script>
 </body>
 </html>`;
     }
@@ -429,7 +432,7 @@ Would you like me to create these files in your workspace?`,
     }
 
     private _getExtensionUri(): vscode.Uri {
-        return vscode.Uri.file(__dirname).with({ scheme: 'vscode-resource' });
+        return this._extensionUri;
     }
 
     public notifyVoiceToggled(enabled: boolean): void {
