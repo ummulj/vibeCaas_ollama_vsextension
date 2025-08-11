@@ -98,6 +98,37 @@ This is the first public release of VibeCaas.ai, a comprehensive AI-powered codi
 ### 🔄 **Recent Improvements (Latest Build)**
 - **TypeScript Compilation**: Fixed 30+ compilation errors
 - **Streaming Support**: Enhanced OllamaClient with proper streaming
+
+## [0.1.2] - 2025-08-11
+
+### 🎨 **Major UI Transformation**
+- **Complete Visual Redesign**: Modern, professional chat interface inspired by Cline and Cursor
+- **Typography Upgrade**: Changed from Montserrat to Inter font for better readability
+- **Modern Color Scheme**: Clean, professional palette with automatic light/dark theme support
+- **Professional Layout**: Redesigned chat interface with improved visual hierarchy and spacing
+
+### ✨ **New Features**
+- **SVG Icons**: Professional iconography throughout the interface
+- **Quick Action Buttons**: Modern, interactive buttons for common tasks
+- **Responsive Design**: Mobile-friendly layouts and interactions
+- **Accessibility**: High contrast mode and reduced motion support
+
+### 🔧 **Technical Improvements**
+- **CSS Architecture**: Design system with custom properties for consistent theming
+- **Modern Layouts**: Flexbox and Grid for responsive design
+- **Performance**: Optimized animations and smooth transitions
+- **JavaScript**: Modern event handling and cleaner, maintainable code structure
+
+### 🐛 **Bug Fixes**
+- **UI Consistency**: Fixed inconsistent styling across components
+- **Responsive Layout**: Improved mobile and tablet experience
+- **Accessibility**: Enhanced keyboard navigation and screen reader support
+- **Performance**: Optimized animations and transitions
+
+### 📱 **Cross-Platform Support**
+- **VS Code**: Optimized for VS Code's design language
+- **Cursor**: Compatible with Cursor's interface
+- **Theme Support**: Automatic light/dark theme detection and switching
 - **Type Safety**: Added comprehensive TypeScript interfaces
 - **Code Organization**: Cleaned up duplicate command registrations
 - **Error Handling**: Improved error handling and user feedback
