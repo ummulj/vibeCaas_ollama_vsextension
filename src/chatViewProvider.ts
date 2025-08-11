@@ -88,15 +88,17 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         this._logger.log(`Extension URI: ${this._extensionUri.toString()}`);
 
         // First, try a simple HTML to test if the issue is with complex content
+        const cspSource = webview.cspSource;
         const simpleHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${cspSource} data:; style-src ${cspSource} 'unsafe-inline'; script-src 'unsafe-inline';">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VibeCaas Chat</title>
     <style>
         body { 
-            font-family: Arial, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; 
             padding: 20px; 
             background: #f0f0f0; 
             color: #333; 
@@ -107,7 +109,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             border-radius: 8px; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
         }
-        h1 { color: #2563eb; }
+        h1 { color: #2563eb; margin-top: 0; }
         .status { 
             background: #10b981; 
             color: white; 
@@ -116,16 +118,23 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             display: inline-block; 
             margin: 10px 0; 
         }
+        .header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .logo { width: 28px; height: 28px; border-radius: 4px; }
+        .row { margin: 8px 0; color: #555; }
+        code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; }
     </style>
 </head>
 <body>
     <div class="test-content">
-        <h1>VibeCaas Chat Test</h1>
+        <div class="header">
+            <img src="${logoUri}" alt="VibeCaas" class="logo" />
+            <h1>VibeCaas Chat Test</h1>
+        </div>
         <div class="status">✅ Webview is working!</div>
-        <p>If you can see this, the webview is functioning correctly.</p>
-        <p>Logo URI: ${logoUri.toString()}</p>
-        <p>Extension URI: ${this._extensionUri.toString()}</p>
-        <p>Time: ${new Date().toLocaleString()}</p>
+        <div class="row">Logo should be visible to the left of the title.</div>
+        <div class="row">Logo URI: <code>${logoUri.toString()}</code></div>
+        <div class="row">Extension URI: <code>${this._extensionUri.toString()}</code></div>
+        <div class="row">Time: <code>${new Date().toLocaleString()}</code></div>
     </div>
     <script>
         console.log('VibeCaas chat webview loaded successfully');
