@@ -1,21 +1,30 @@
-export class Logger {
-  private enabled: boolean;
-  constructor(enabled: boolean = false) {
-    this.enabled = enabled;
-  }
-  setEnabled(enabled: boolean) {
-    this.enabled = enabled;
-  }
-  info(message: string, ...args: unknown[]) {
-    if (this.enabled) {
-      console.log(`[VibeCaas] ${message}`, ...args);
+export interface Logger {
+    log(message: string, ...args: any[]): void;
+    error(message: string, error?: any): void;
+    warn(message: string, ...args: any[]): void;
+    info(message: string, ...args: any[]): void;
+    debug(message: string, ...args: any[]): void;
+}
+
+export class ConsoleLogger implements Logger {
+    log(message: string, ...args: any[]): void {
+        console.log(`[VibeCaas] ${message}`, ...args);
     }
-  }
-  warn(message: string, ...args: unknown[]) {
-    console.warn(`[VibeCaas] ${message}`, ...args);
-  }
-  error(message: string, ...args: unknown[]) {
-    console.error(`[VibeCaas] ${message}`, ...args);
-  }
+
+    error(message: string, error?: any): void {
+        console.error(`[VibeCaas] ERROR: ${message}`, error);
+    }
+
+    warn(message: string, ...args: any[]): void {
+        console.warn(`[VibeCaas] WARN: ${message}`, ...args);
+    }
+
+    info(message: string, ...args: any[]): void {
+        console.info(`[VibeCaas] INFO: ${message}`, ...args);
+    }
+
+    debug(message: string, ...args: any[]): void {
+        console.debug(`[VibeCaas] DEBUG: ${message}`, ...args);
+    }
 }
 

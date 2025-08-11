@@ -1,94 +1,135 @@
 import * as vscode from 'vscode';
 import { OllamaClient } from './ollamaClient';
+import { Logger, ConsoleLogger } from './logger';
 import { ChatViewProvider } from './chatViewProvider';
-import { registerCommands } from './commands';
-import { Logger } from './logger';
-import { VoiceSession } from './voiceSession';
 import { ToolsViewProvider } from './toolsViewProvider';
+import { VoiceSession } from './voiceSession';
+import { AgentOrchestrator } from './agents';
+import { registerCommands } from './commands';
 
-let chatProvider: ChatViewProvider | undefined;
-let ollamaClient: OllamaClient | undefined;
-let logger: Logger | undefined;
-let voiceSession: VoiceSession | undefined;
+let ollamaClient: OllamaClient;
+let logger: Logger;
+let chatProvider: ChatViewProvider;
+let toolsProvider: ToolsViewProvider;
+let voiceSession: VoiceSession;
+let agentOrchestrator: AgentOrchestrator;
 
-export async function activate(context: vscode.ExtensionContext) {
-  const config = vscode.workspace.getConfiguration('vibecaas');
-  const debugEnabled = config.get<boolean>('enableDebug', false);
-  logger = new Logger(debugEnabled);
-  logger.info('Activating VibeCaas.ai extension');
+export function activate(context: vscode.ExtensionContext) {
+    // Initialize logger
+    logger = new ConsoleLogger();
+    
+    // Initialize Ollama client
+    const config = vscode.workspace.getConfiguration('vibecaas');
+    const ollamaUrl = config.get<string>('ollamaUrl', 'http://localhost:11434');
+    ollamaClient = new OllamaClient(ollamaUrl, logger);
+    
+    // Initialize agent orchestrator
+    agentOrchestrator = new AgentOrchestrator(ollamaClient, logger);
 
-  const ollamaUrl = config.get<string>('ollamaUrl', 'http://localhost:11434');
-  const defaultModel = config.get<string>('defaultModel', 'qwen2.5-coder:7b');
+    // Register chat view provider
+    chatProvider = new ChatViewProvider(ollamaClient, logger);
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider(
+            ChatViewProvider.viewType,
+            chatProvider
+        )
+    );
 
-  ollamaClient = new OllamaClient(ollamaUrl, logger);
+    // Register tools view provider
+    toolsProvider = new ToolsViewProvider(context.extensionUri);
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider(
+            'vibecaas.toolsView',
+            toolsProvider
+        )
+    );
 
-  chatProvider = new ChatViewProvider(context.extensionUri, ollamaClient, logger);
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider('vibecaas.chatView', chatProvider)
-  );
+    // Initialize voice session
+    voiceSession = new VoiceSession(ollamaClient, logger);
 
-  const toolsProvider = new ToolsViewProvider(context.extensionUri);
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider('vibecaas.toolsView', toolsProvider)
-  );
+    // Register all commands
+    const ctx = {
+        ollamaClient,
+        chatProvider,
+        logger,
+        updateModelStatus: (model: string) => {
+            // Update status bar with new model
+            const modeStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 98);
+            modeStatusBarItem.text = `$(symbol-color) ${model}`;
+            modeStatusBarItem.show();
+        }
+    };
+    
+    registerCommands(context, ctx);
 
-  // Status bar: show current model and voice toggle
-  const modelStatus = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-  modelStatus.command = 'vibecaas.changeModel';
-  modelStatus.text = `$(server) ${defaultModel}`;
-  modelStatus.tooltip = 'VibeCaas.ai: Change Model';
-  modelStatus.show();
-  context.subscriptions.push(modelStatus);
+    // Status bar items
+    const modelStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+    modelStatusBarItem.text = '$(server) Ollama';
+    modelStatusBarItem.tooltip = 'Click to change model';
+    modelStatusBarItem.command = 'vibecaas.changeModel';
+    context.subscriptions.push(modelStatusBarItem);
 
-  const voiceStatus = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 99);
-  voiceStatus.command = 'vibecaas.toggleVoiceMode';
-  voiceStatus.text = '$(unmute) Vibe';
-  voiceStatus.tooltip = 'VibeCaas.ai: Toggle Voice Mode';
-  voiceStatus.show();
-  context.subscriptions.push(voiceStatus);
+    const voiceStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
+    voiceStatusBarItem.text = '$(mic) Voice';
+    voiceStatusBarItem.tooltip = 'Click to toggle voice mode';
+    voiceStatusBarItem.command = 'vibecaas.toggleVoiceMode';
+    context.subscriptions.push(voiceStatusBarItem);
 
-  const modeStatus = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 98);
-  modeStatus.command = 'vibecaas.toggleMode';
-  const currentMode = vscode.workspace.getConfiguration('vibecaas').get<'vibe' | 'code'>('mode', 'code');
-  modeStatus.text = currentMode === 'code' ? '$(code) Code' : '$(megaphone) Vibe';
-  modeStatus.tooltip = 'VibeCaas.ai: Toggle Vibe/Code Mode';
-  modeStatus.show();
-  context.subscriptions.push(modeStatus);
+    const modeStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 98);
+    modeStatusBarItem.text = '$(symbol-color) Chat';
+    modeStatusBarItem.tooltip = 'Current mode';
+    context.subscriptions.push(modeStatusBarItem);
 
-  registerCommands(context, {
-    ollamaClient,
-    chatProvider,
-    logger,
-    updateModelStatus: (model: string) => (modelStatus.text = `$(server) ${model}`),
-  });
+    // Show status bar items
+    modelStatusBarItem.show();
+    voiceStatusBarItem.show();
+    modeStatusBarItem.show();
 
-  vscode.workspace.onDidChangeConfiguration((e) => {
-    if (e.affectsConfiguration('vibecaas.enableDebug')) {
-      const enabled = vscode.workspace.getConfiguration('vibecaas').get<boolean>('enableDebug', false);
-      logger?.setEnabled(enabled ?? false);
-    }
-    if (e.affectsConfiguration('vibecaas.mode')) {
-      const m = vscode.workspace.getConfiguration('vibecaas').get<'vibe' | 'code'>('mode', 'code');
-      modeStatus.text = m === 'code' ? '$(code) Code' : '$(megaphone) Vibe';
-    }
-  });
+    // Update status periodically
+    const updateStatus = async () => {
+        try {
+            const models = await ollamaClient.listModels();
+            const currentModel = config.get<string>('defaultModel', 'none');
+            const isOnline = models.length > 0;
+            
+            modelStatusBarItem.text = `$(server) ${isOnline ? 'Online' : 'Offline'}`;
+            modelStatusBarItem.backgroundColor = isOnline ? undefined : new vscode.ThemeColor('errorForeground');
+            
+            if (isOnline) {
+                const hasCurrentModel = models.some(m => m.name === currentModel);
+                modeStatusBarItem.text = `$(symbol-color) ${hasCurrentModel ? currentModel : models[0].name}`;
+            } else {
+                modeStatusBarItem.text = '$(symbol-color) Offline';
+            }
+        } catch (error) {
+            modelStatusBarItem.text = '$(server) Error';
+            modelStatusBarItem.backgroundColor = new vscode.ThemeColor('errorForeground');
+            modeStatusBarItem.text = '$(symbol-color) Error';
+        }
+    };
 
-  // Voice session lifecycle based on setting
-  const voiceEnabled = vscode.workspace.getConfiguration('vibecaas').get<boolean>('enableVoice', false);
-  voiceSession = new VoiceSession(ollamaClient, logger);
-  if (voiceEnabled) {
-    voiceSession.start();
-  }
-  context.subscriptions.push(
-    vscode.workspace.onDidChangeConfiguration(async (e) => {
-      if (e.affectsConfiguration('vibecaas.enableVoice')) {
-        const enabled = vscode.workspace.getConfiguration('vibecaas').get<boolean>('enableVoice', false);
-        if (enabled) await voiceSession?.start();
-        else await voiceSession?.stop();
-      }
-    })
-  );
+    // Initial status update
+    updateStatus();
+
+    // Update status every 30 seconds
+    const statusInterval = setInterval(updateStatus, 30000);
+    context.subscriptions.push({ dispose: () => clearInterval(statusInterval) });
+
+    // Configuration change listener
+    context.subscriptions.push(
+        vscode.workspace.onDidChangeConfiguration((event) => {
+            if (event.affectsConfiguration('vibecaas.ollamaUrl')) {
+                const newUrl = config.get<string>('ollamaUrl', 'http://localhost:11434');
+                ollamaClient.setBaseUrl(newUrl);
+                updateStatus();
+            }
+        })
+    );
+
+    logger.log('VibeCaas extension activated');
 }
 
-export function deactivate() {}
+export function deactivate() {
+    logger?.log('VibeCaas extension deactivated');
+}
 

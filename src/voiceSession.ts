@@ -15,6 +15,16 @@ export class VoiceSession {
   private disposeFns: Array<() => void> = [];
   constructor(private ollama: OllamaClient, private logger?: Logger) {}
 
+  async toggleVoiceMode(): Promise<boolean> {
+    if (this.running) {
+      await this.stop();
+      return false;
+    } else {
+      await this.start();
+      return true;
+    }
+  }
+
   async start(): Promise<void> {
     if (this.running) return;
     const cfg = vscode.workspace.getConfiguration('vibecaas');

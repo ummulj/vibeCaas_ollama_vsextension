@@ -120,10 +120,15 @@ export function registerCommands(context: vscode.ExtensionContext, ctx: Ctx) {
       if (!ctx.ollamaClient) return;
       try {
         const models = await ctx.ollamaClient.listModels();
-        const pick = await vscode.window.showQuickPick(models, { placeHolder: 'Select default model' });
+        const modelItems = models.map(model => ({
+          label: model.name,
+          description: `${(model.size / 1024 / 1024 / 1024).toFixed(1)}GB`,
+          detail: model.modified_at
+        }));
+        const pick = await vscode.window.showQuickPick(modelItems, { placeHolder: 'Select default model' });
         if (pick) {
-          await config().update('defaultModel', pick, vscode.ConfigurationTarget.Global);
-          ctx.updateModelStatus(pick);
+          await config().update('defaultModel', pick.label, vscode.ConfigurationTarget.Global);
+          ctx.updateModelStatus(pick.label);
         }
       } catch (err: any) {
         vscode.window.showErrorMessage(`Failed to list models: ${err.message || err}`);
