@@ -1,4 +1,4 @@
-// VibeCaas Chat JavaScript
+// VibeCaas Chat JavaScript - Modern UI Version
 (function() {
     'use strict';
 
@@ -14,11 +14,7 @@
     const messageInput = document.getElementById('messageInput');
     const sendButton = document.getElementById('sendButton');
     const voiceButton = document.getElementById('voiceButton');
-    
-    // Modal elements
-    const settingsModal = document.getElementById('settingsModal');
-    const profileModal = document.getElementById('profileModal');
-    const helpModal = document.getElementById('helpModal');
+    const refreshButton = document.getElementById('refreshButton');
     
     // Status elements
     const ollamaStatus = document.getElementById('ollamaStatus');
@@ -63,35 +59,16 @@
         // Voice button
         voiceButton.addEventListener('click', toggleVoiceMode);
         
-        // Modal triggers
-        document.getElementById('settingsBtn').addEventListener('click', () => openModal(settingsModal));
-        document.getElementById('profileBtn').addEventListener('click', () => openModal(profileModal));
-        document.getElementById('helpBtn').addEventListener('click', () => openModal(helpModal));
+        // Refresh button
+        refreshButton.addEventListener('click', refreshChat);
         
-        // Modal close buttons
-        document.getElementById('settingsClose').addEventListener('click', () => closeModal(settingsModal));
-        document.getElementById('profileClose').addEventListener('click', () => closeModal(profileModal));
-        document.getElementById('helpClose').addEventListener('click', () => closeModal(helpModal));
-        document.getElementById('helpCloseBtn').addEventListener('click', () => closeModal(helpModal));
+        // Settings and help buttons
+        document.getElementById('settingsBtn').addEventListener('click', openSettings);
+        document.getElementById('helpBtn').addEventListener('click', openHelp);
         
-        // Settings actions
-        document.getElementById('settingsSave').addEventListener('click', saveSettings);
-        document.getElementById('settingsReset').addEventListener('click', resetSettings);
+        // Quick action buttons
+        document.addEventListener('click', handleQuickActionClick);
         
-        // Profile actions
-        document.getElementById('profileSave').addEventListener('click', saveProfile);
-        document.getElementById('profileExport').addEventListener('click', exportProfile);
-        
-        // Action chips
-        document.addEventListener('click', handleActionChipClick);
-        
-        // Click outside modal to close
-        window.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal')) {
-                closeModal(e.target);
-            }
-        });
-
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             if (e.ctrlKey || e.metaKey) {
@@ -102,7 +79,7 @@
                         break;
                     case ',':
                         e.preventDefault();
-                        openModal(settingsModal);
+                        openSettings();
                         break;
                 }
             }
@@ -186,25 +163,35 @@
         const content = document.createElement('div');
         content.className = 'message-content';
 
-        const text = document.createElement('div');
-        text.className = 'message-text';
+        const header = document.createElement('div');
+        header.className = 'message-header';
         
-        const time = document.createElement('div');
+        const author = document.createElement('span');
+        author.className = 'message-author';
+        
+        const time = document.createElement('span');
         time.className = 'message-time';
 
-        // Set avatar text
+        const text = document.createElement('div');
+        text.className = 'message-text';
+
+        // Set avatar icon
         switch(message.sender) {
             case 'user':
-                avatar.textContent = 'U';
+                avatar.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+                author.textContent = 'You';
                 break;
             case 'assistant':
-                avatar.textContent = 'AI';
+                avatar.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>';
+                author.textContent = 'VibeCaas AI';
                 break;
             case 'agent':
-                avatar.textContent = '🤖';
+                avatar.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>';
+                author.textContent = 'AI Agent';
                 break;
             default:
-                avatar.textContent = '?';
+                avatar.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>';
+                author.textContent = 'Unknown';
         }
 
         // Set content
@@ -216,33 +203,77 @@
                 <span class="file-name">${message.fileName}</span>
             </div>`;
         } else {
-            text.textContent = message.content;
+            // Convert markdown-like content to HTML
+            text.innerHTML = formatMessageContent(message.content);
         }
 
         // Set timestamp
         time.textContent = formatTimestamp(message.timestamp);
 
-        // Add action chips for assistant messages
+        // Add quick actions for assistant messages
         if (message.sender === 'assistant' && message.showActions !== false) {
-            const actionChips = document.createElement('div');
-            actionChips.className = 'action-chips';
-            actionChips.innerHTML = `
-                <div class="action-chip" data-action="plan">📋 Generate Plan</div>
-                <div class="action-chip" data-action="debug">🐛 Debug Code</div>
-                <div class="action-chip" data-action="explain">💡 Explain Code</div>
-                <div class="action-chip" data-action="scaffold">🏗️ Scaffold App</div>
+            const quickActions = document.createElement('div');
+            quickActions.className = 'quick-actions';
+            quickActions.innerHTML = `
+                <button class="quick-action-btn" data-action="plan">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11H1l8-8v8Z"/>
+                        <path d="M23 13h-8l8 8v-8Z"/>
+                        <path d="M9 13H1l8 8v-8Z"/>
+                        <path d="M23 11h-8l8-8v8Z"/>
+                    </svg>
+                    Plan Project
+                </button>
+                <button class="quick-action-btn" data-action="debug">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 9l3 3-3 3"/>
+                        <path d="M16 9l-3 3 3 3"/>
+                        <path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"/>
+                    </svg>
+                    Debug Code
+                </button>
+                <button class="quick-action-btn" data-action="explain">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                        <path d="M12 17h.01"/>
+                    </svg>
+                    Explain Code
+                </button>
+                <button class="quick-action-btn" data-action="scaffold">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 3h18v18H3z"/>
+                        <path d="M9 9h6v6H9z"/>
+                        <path d="M3 9h6"/>
+                        <path d="M15 9h6"/>
+                        <path d="M3 15h6"/>
+                        <path d="M15 15h6"/>
+                    </svg>
+                    Scaffold App
+                </button>
             `;
-            content.appendChild(actionChips);
+            content.appendChild(quickActions);
         }
 
         // Assemble message
+        header.appendChild(author);
+        header.appendChild(time);
+        content.appendChild(header);
         content.appendChild(text);
-        content.appendChild(time);
         
         messageElement.appendChild(avatar);
         messageElement.appendChild(content);
         
         messagesContainer.appendChild(messageElement);
+    }
+
+    function formatMessageContent(content) {
+        // Simple markdown-like formatting
+        return content
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/`(.*?)`/g, '<code>$1</code>')
+            .replace(/\n/g, '<br>');
     }
 
     function renderChatHistory() {
@@ -259,7 +290,13 @@
         typingElement.id = 'typingIndicator';
         
         typingElement.innerHTML = `
-            <div class="message-avatar">AI</div>
+            <div class="message-avatar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                    <path d="M12 16v-4"/>
+                    <path d="M12 8h.01"/>
+                </svg>
+            </div>
             <div class="message-content">
                 <div class="typing-indicator">
                     <div class="typing-dot"></div>
@@ -281,13 +318,30 @@
         }
     }
 
-    function handleActionChipClick(e) {
-        if (e.target.classList.contains('action-chip')) {
+    function handleQuickActionClick(e) {
+        if (e.target.classList.contains('quick-action-btn')) {
             const action = e.target.dataset.action;
-            const actionText = e.target.textContent;
+            let actionText = '';
+            
+            switch(action) {
+                case 'plan':
+                    actionText = 'Plan a project for me';
+                    break;
+                case 'debug':
+                    actionText = 'Debug this code';
+                    break;
+                case 'explain':
+                    actionText = 'Explain this code';
+                    break;
+                case 'scaffold':
+                    actionText = 'Scaffold a new application';
+                    break;
+                default:
+                    actionText = 'Help me with this';
+            }
             
             // Prefill input with action
-            messageInput.value = `${actionText}: `;
+            messageInput.value = actionText + ': ';
             messageInput.focus();
             handleInputChange();
         }
@@ -300,113 +354,22 @@
         });
     }
 
-    function openModal(modal) {
-        modal.style.display = 'block';
-        document.body.style.overflow = 'hidden';
-        
-        // Load current values
-        if (modal === settingsModal) {
-            loadSettingsIntoForm();
-        } else if (modal === profileModal) {
-            loadProfileIntoForm();
+    function refreshChat() {
+        // Clear chat and reload
+        if (confirm('Are you sure you want to refresh the chat?')) {
+            clearChat();
+            showNotification('Chat refreshed', 'success');
         }
     }
 
-    function closeModal(modal) {
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
+    function openSettings() {
+        // For now, just show a notification
+        showNotification('Settings panel coming soon!', 'info');
     }
 
-    function loadSettingsIntoForm() {
-        document.getElementById('ollamaUrl').value = currentSettings.ollamaUrl || 'http://localhost:11434';
-        document.getElementById('defaultModel').value = currentSettings.defaultModel || 'mistral:latest';
-        document.getElementById('maxContextBytes').value = currentSettings.maxContextBytes || 8192;
-        document.getElementById('enableVoice').checked = currentSettings.enableVoice || false;
-        document.getElementById('voskModelPath').value = currentSettings.voskModelPath || '';
-        document.getElementById('enableDebug').checked = currentSettings.enableDebug || false;
-        document.getElementById('mode').value = currentSettings.mode || 'chat';
-        document.getElementById('maxFiles').value = currentSettings.scaffold?.maxFiles || 10;
-        document.getElementById('maxTotalBytes').value = currentSettings.scaffold?.maxTotalBytes || 1048576;
-        document.getElementById('allowOverwrite').checked = currentSettings.scaffold?.allowOverwrite || false;
-    }
-
-    function loadProfileIntoForm() {
-        document.getElementById('developerName').value = userProfile.name || '';
-        document.getElementById('preferredLanguage').value = userProfile.preferredLanguage || 'typescript';
-        document.getElementById('framework').value = userProfile.framework || 'react';
-        document.getElementById('theme').value = userProfile.theme || 'dark';
-        document.getElementById('fontSize').value = userProfile.fontSize || 'medium';
-        
-        // Update stats
-        document.getElementById('totalMessages').textContent = userProfile.stats?.totalMessages || 0;
-        document.getElementById('totalTokens').textContent = userProfile.stats?.totalTokens || 0;
-        document.getElementById('projectsCreated').textContent = userProfile.stats?.projectsCreated || 0;
-    }
-
-    function saveSettings() {
-        currentSettings = {
-            ollamaUrl: document.getElementById('ollamaUrl').value,
-            defaultModel: document.getElementById('defaultModel').value,
-            maxContextBytes: parseInt(document.getElementById('maxContextBytes').value),
-            enableVoice: document.getElementById('enableVoice').checked,
-            voskModelPath: document.getElementById('voskModelPath').value,
-            enableDebug: document.getElementById('enableDebug').checked,
-            mode: document.getElementById('mode').value,
-            scaffold: {
-                maxFiles: parseInt(document.getElementById('maxFiles').value),
-                maxTotalBytes: parseInt(document.getElementById('maxTotalBytes').value),
-                allowOverwrite: document.getElementById('allowOverwrite').checked
-            }
-        };
-
-        localStorage.setItem('vibecaas_settings', JSON.stringify(currentSettings));
-        
-        // Send to extension
-        vscode.postMessage({
-            command: 'updateSettings',
-            settings: currentSettings
-        });
-
-        closeModal(settingsModal);
-        showNotification('Settings saved successfully!');
-    }
-
-    function saveProfile() {
-        userProfile = {
-            name: document.getElementById('developerName').value,
-            preferredLanguage: document.getElementById('preferredLanguage').value,
-            framework: document.getElementById('framework').value,
-            theme: document.getElementById('theme').value,
-            fontSize: document.getElementById('fontSize').value,
-            stats: userProfile.stats || {
-                totalMessages: 0,
-                totalTokens: 0,
-                projectsCreated: 0
-            }
-        };
-
-        localStorage.setItem('vibecaas_profile', JSON.stringify(userProfile));
-        closeModal(profileModal);
-        showNotification('Profile saved successfully!');
-    }
-
-    function resetSettings() {
-        if (confirm('Are you sure you want to reset all settings to defaults?')) {
-            currentSettings = {};
-            localStorage.removeItem('vibecaas_settings');
-            loadSettingsIntoForm();
-            showNotification('Settings reset to defaults');
-        }
-    }
-
-    function exportProfile() {
-        const dataStr = JSON.stringify(userProfile, null, 2);
-        const dataBlob = new Blob([dataStr], {type: 'application/json'});
-        
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(dataBlob);
-        link.download = 'vibecaas-profile.json';
-        link.click();
+    function openHelp() {
+        // For now, just show a notification
+        showNotification('Help documentation coming soon!', 'info');
     }
 
     function clearChat() {
@@ -414,7 +377,7 @@
             chatHistory = [];
             saveChatHistory();
             renderChatHistory();
-            showNotification('Chat history cleared');
+            showNotification('Chat history cleared', 'success');
         }
     }
 
@@ -440,7 +403,7 @@
         vscode.postMessage({ command: 'getStatus' });
         
         // Update current mode
-        currentMode.textContent = `Mode: ${currentSettings.mode || 'Chat'}`;
+        currentMode.textContent = 'Chat Mode';
     }
 
     function scrollToBottom() {
@@ -534,20 +497,20 @@
     function updateStatusFromExtension(status) {
         // Update Ollama status
         if (status.ollama) {
-            ollamaStatus.className = `status-dot ${status.ollama}`;
-            document.getElementById('ollamaStatusText').textContent = `Ollama: ${status.ollama}`;
+            ollamaStatus.className = `status-indicator ${status.ollama}`;
+            document.getElementById('ollamaStatusText').textContent = status.ollama === 'online' ? 'Ollama' : 'Offline';
         }
         
         // Update model status
         if (status.model) {
-            modelStatus.className = `status-dot ${status.model}`;
-            document.getElementById('modelStatusText').textContent = `Model: ${status.model}`;
+            modelStatus.className = `status-indicator ${status.model}`;
+            document.getElementById('modelStatusText').textContent = status.model === 'online' ? 'Model' : 'No Model';
         }
         
         // Update voice status
         if (status.voice) {
-            voiceStatus.className = `status-dot ${status.voice}`;
-            document.getElementById('voiceStatusText').textContent = `Voice: ${status.voice}`;
+            voiceStatus.className = `status-indicator ${status.voice}`;
+            document.getElementById('voiceStatusText').textContent = status.voice === 'online' ? 'Voice' : 'Voice Off';
         }
     }
 
@@ -558,15 +521,16 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            background: var(--accent);
+            background: var(--accent-primary);
             color: white;
             padding: 12px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
             transform: translateX(400px);
-            transition: transform 0.3s ease;
+            transition: transform var(--transition-normal);
             z-index: 10000;
             max-width: 300px;
+            font-weight: 500;
         }
         
         .notification.show {
@@ -574,15 +538,15 @@
         }
         
         .notification.success {
-            background: var(--green);
+            background: var(--accent-success);
         }
         
         .notification.error {
-            background: var(--red);
+            background: var(--accent-error);
         }
         
         .notification.info {
-            background: var(--blue);
+            background: var(--accent-primary);
         }
     `;
     document.head.appendChild(notificationStyles);
