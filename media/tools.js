@@ -2,19 +2,27 @@
   const vscode = acquireVsCodeApi();
   const $ = (s)=>document.querySelector(s);
   const tabs = document.querySelectorAll('.tab');
-  tabs.forEach(t => t.addEventListener('click', ()=>{
+  function activateTab(id){
     tabs.forEach(x => x.classList.remove('active'));
-    t.classList.add('active');
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    const id = t.getAttribute('data-tab');
+    const t = Array.from(tabs).find(t=>t.getAttribute('data-tab')===id);
+    t?.classList.add('active');
     document.getElementById(id)?.classList.add('active');
+  }
+  tabs.forEach(t => t.addEventListener('click', ()=>{
+    const id = t.getAttribute('data-tab');
+    activateTab(id);
   }));
 
   // Browser
   const urlEl = $('#url');
+  function doBrowse(url){
+    urlEl.value = url;
+    vscode.postMessage({ type: 'browse', url });
+  }
   $('#go').addEventListener('click', ()=>{
     const url = urlEl.value.trim(); if(!url) return;
-    vscode.postMessage({ type: 'browse', url });
+    doBrowse(url);
   });
   $('#openExternal').addEventListener('click', ()=>{
     const url = urlEl.value.trim(); if(!url) return;
@@ -27,6 +35,19 @@
     }
     if(m.type === 'browseError'){
       $('#browseResult').textContent = 'Error: ' + m.error;
+    }
+    if(m.type === 'showTab'){
+      activateTab(m.tab);
+    }
+    if(m.type === 'triggerBrowse' && m.url){
+      activateTab('browser');
+      doBrowse(m.url);
+    }
+    if(m.type === 'setSandbox'){
+      if(typeof m.html === 'string') $('#html').value = m.html;
+      if(typeof m.css === 'string') $('#css').value = m.css;
+      if(typeof m.js === 'string') $('#js').value = m.js;
+      document.getElementById('run').click();
     }
   });
 
