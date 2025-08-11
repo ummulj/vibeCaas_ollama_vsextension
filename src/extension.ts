@@ -54,6 +54,7 @@ export function activate(context: vscode.ExtensionContext) {
         // Register tools view provider
         logger.log('Registering tools view provider...');
         toolsProvider = new ToolsViewProvider(context.extensionUri);
+        ;(global as any).ToolsViewProvider = ToolsViewProvider;
         context.subscriptions.push(
             vscode.window.registerWebviewViewProvider(
                 'vibecaas.toolsView',

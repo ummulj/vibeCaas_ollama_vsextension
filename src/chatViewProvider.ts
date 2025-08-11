@@ -361,14 +361,33 @@ Your application is ready! The AI agents have created a complete, deployable app
             if (result.files.length > 0) {
                 this._postMessageToWebview('addMessage', {
                     sender: 'assistant',
-                    content: `📁 **Generated Files:**
-
-${result.files.map(file => `• \`${file.path}\` (${file.language})`).join('\n')}
-
-Would you like me to create these files in your workspace?`,
+                    content: `📁 **Generated Files:**\n\n${result.files.map(file => `• \`${file.path}\` (${file.language})`).join('\n')}\n\nCreating files in your workspace...`,
                     timestamp: Date.now(),
                     showActions: false
                 });
+
+                // Write files to workspace
+                const workspace = vscode.workspace.workspaceFolders?.[0];
+                if (workspace) {
+                    for (const f of result.files) {
+                        const uri = vscode.Uri.joinPath(workspace.uri, f.path);
+                        await vscode.workspace.fs.createDirectory(vscode.Uri.joinPath(uri, '..'));
+                        await vscode.workspace.fs.writeFile(uri, Buffer.from(f.content, 'utf8'));
+                    }
+                    this._postMessageToWebview('showSuccess', { message: '✅ Files created in workspace.' });
+                } else {
+                    this._postMessageToWebview('showError', { error: 'No workspace open. Cannot write files.' });
+                }
+
+                // If any frontend artifact exists, prefill Tools sandbox for quick preview
+                const htmlFile = result.files.find(f => f.path.endsWith('App.tsx') || f.path.endsWith('index.html'));
+                if (htmlFile && (global as any).ToolsViewProvider?.current) {
+                    try {
+                        (global as any).ToolsViewProvider.current.reveal();
+                        (global as any).ToolsViewProvider.current.post({ type: 'showTab', tab: 'sandbox' });
+                        (global as any).ToolsViewProvider.current.post({ type: 'setSandbox', html: '<div id="app">Hello</div>', css: '', js: "document.getElementById('app').innerText='Preview';" });
+                    } catch {}
+                }
             }
 
         } catch (error) {

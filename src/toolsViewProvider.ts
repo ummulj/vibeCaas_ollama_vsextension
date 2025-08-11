@@ -2,9 +2,10 @@ import * as vscode from 'vscode';
 
 export class ToolsViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'vibecaas.toolsView';
+  public static current?: ToolsViewProvider;
   private _view?: vscode.WebviewView;
 
-  constructor(private readonly extensionUri: vscode.Uri) {}
+  constructor(private readonly extensionUri: vscode.Uri) { ToolsViewProvider.current = this; }
 
   resolveWebviewView(webviewView: vscode.WebviewView): void | Thenable<void> {
     this._view = webviewView;
@@ -37,7 +38,11 @@ export class ToolsViewProvider implements vscode.WebviewViewProvider {
     });
   }
 
-  private post(message: any) {
+  public reveal(): void {
+    vscode.commands.executeCommand('vibecaas.toolsView.focus');
+  }
+
+  public post(message: any) {
     this._view?.webview.postMessage(message);
   }
 
