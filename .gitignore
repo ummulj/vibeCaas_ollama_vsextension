@@ -6,3 +6,9 @@ dist/
 coverage/
 .env
 
+
+# Build artifacts
+*.vsix
+*.tgz
+*.tar.gz
+dist/*.map
